@@ -1,0 +1,12 @@
+{
+  "name": "vibecodingskills",
+  "owner": { "name": "Vibe Coding Skills" },
+  "description": "The Vibe Coding Skills lesson panel for the Claude desktop app.",
+  "plugins": [
+    {
+      "name": "vibe-coding-skills",
+      "source": "./plugins/vibe-coding-skills",
+      "description": "Learn Claude Code by building fun projects: the lesson sits in a panel next to the chat and checks each step on its own."
+    }
+  ]
+}
