@@ -15,6 +15,8 @@ const EDIT_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit'])
 const REFUSAL = /reject|denied|declin|refus|doesn't want|does not want/i
 const DEFAULT_PROMPT_MIN = 25
 const DEBUG_MAX = 40
+// Models the panel advises against for these light exercises (quota of a Pro plan).
+const BIG_MODEL = /opus/i
 
 // Bump a shape when the value's fields change: a reload then declines the old value.
 const progressAtom = atom({ plugin: 'vibe-coding-skills', key: 'progress' } as const, null, {
@@ -233,6 +235,7 @@ export const register: Register = on => {
     const { Box, Button, Markdown, Text } = $.ui.resolve(e)
     const p = await read($, progressAtom)
     const results = await read($, resultsAtom)
+    const model = await $.session.model().catch(() => '')
 
     if (!p) {
       return <Text dimColor>Type /atelier in an empty project folder to start.</Text>
@@ -285,6 +288,14 @@ export const register: Register = on => {
             <Text dimColor>{isComplete ? L.complete : L.stepOf(p.stepIndex + 1, total)}</Text>
           </Text>
         </Box>
+
+        {BIG_MODEL.test(model) && (
+          <Box padding={1} borderStyle="round" borderColor="warning">
+            <Text size="footnote" color="warning">
+              {L.bigModel(model)}
+            </Text>
+          </Box>
+        )}
 
         {debriefStep && (
           <Box flexDirection="column" gap={0} padding={1} borderStyle="round" borderColor="success">

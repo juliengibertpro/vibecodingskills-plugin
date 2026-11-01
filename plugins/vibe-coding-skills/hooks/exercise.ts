@@ -251,6 +251,8 @@ export const UI = {
     toastStep: (i: number, n: number) => `Step ${i}/${n} validated`,
     toastDone: 'Exercise complete!',
     command: 'Open the Vibe Coding Skills lesson beside the chat',
+    bigModel: (model: string) =>
+      `You are on ${model}. For these exercises Sonnet is plenty and uses far less of your quota: switch it in the model menu under the message box.`,
   },
   fr: {
     putInChat: 'Mettre dans le chat',
@@ -271,6 +273,8 @@ export const UI = {
     toastStep: (i: number, n: number) => `Étape ${i}/${n} validée`,
     toastDone: 'Exo terminé !',
     command: 'Ouvrir la leçon Vibe Coding Skills à côté du chat',
+    bigModel: (model: string) =>
+      `Tu es sur ${model}. Pour ces exos, Sonnet suffit et use beaucoup moins ton quota : change-le dans le menu du modèle, sous la zone de message.`,
   },
 } as const
 
