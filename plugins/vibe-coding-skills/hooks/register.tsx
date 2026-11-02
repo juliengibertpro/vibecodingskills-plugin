@@ -15,6 +15,13 @@ const EDIT_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit'])
 const REFUSAL = /reject|denied|declin|refus|doesn't want|does not want/i
 const DEFAULT_PROMPT_MIN = 25
 const DEBUG_MAX = 40
+// Permission modes in which Claude edits without asking: a refusal step cannot happen.
+const NO_ASK_MODES: Record<string, string> = {
+  auto: 'Auto',
+  acceptEdits: 'Accept edits',
+  bypassPermissions: 'Bypass',
+  dontAsk: "Don't ask",
+}
 // Models the panel advises against for these light exercises (quota of a Pro plan).
 const BIG_MODEL = /opus/i
 
@@ -25,6 +32,7 @@ const progressAtom = atom({ plugin: 'vibe-coding-skills', key: 'progress' } as c
 const resultsAtom = atom({ plugin: 'vibe-coding-skills', key: 'results' } as const, null, {
   shape: 'results-1',
 })
+const modeAtom = atom({ plugin: 'vibe-coding-skills', key: 'mode' } as const, null)
 
 type Engine = EngineInterface
 
@@ -115,6 +123,10 @@ async function evaluate($: Engine): Promise<void> {
   const L = UI[p.lang]
   $.ui.toast(isLast ? L.toastDone : L.toastStep(p.stepIndex + 1, EXERCISE.steps.length))
   void $.audio.play({ asset: isLast ? 'sounds/done.wav' : 'sounds/step.wav' }).catch(() => undefined)
+}
+
+async function rememberMode($: Engine, mode: string | undefined): Promise<void> {
+  if (mode) await update($, modeAtom, () => mode)
 }
 
 function isRefused(ran: ToolCallResult): boolean {
@@ -221,6 +233,17 @@ export const register: Register = on => {
     return ran
   }).catch(($, e, next) => next(e))
 
+  // The permission mode rides on the classic hook inputs; keep the latest one.
+  on('classic.UserPromptSubmit', async ($, e, next) => {
+    await rememberMode($, e.permission_mode)
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
+  on('classic.Stop', async ($, e, next) => {
+    await rememberMode($, e.permission_mode)
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
   // Each time Claude finishes answering, the current step is checked.
   on('turn.complete', async ($, e, next) => {
     const ran = await next(e)
@@ -236,6 +259,7 @@ export const register: Register = on => {
     const p = await read($, progressAtom)
     const results = await read($, resultsAtom)
     const model = await $.session.model().catch(() => '')
+    const mode = await read($, modeAtom)
 
     if (!p) {
       return <Text dimColor>Type /atelier in an empty project folder to start.</Text>
@@ -250,6 +274,8 @@ export const register: Register = on => {
     const hintLevel = step ? (p.hintLevel[step.id] ?? 0) : 0
     const promptText = step?.prompt?.[lang]
     const manualLabel = step?.manual?.[lang]
+    const noAskMode = mode ? NO_ASK_MODES[mode] : undefined
+    const needsAsk = step?.checks.some(check => check.type === 'edit_refused') === true
     const shown = step && results?.stepId === step.id ? results.passed : null
     const dots = EXERCISE.steps
       .map((_, i) => (i < p.stepIndex ? '●' : i === p.stepIndex ? '◉' : '○'))
@@ -321,6 +347,14 @@ export const register: Register = on => {
               {step.title[lang]}
             </Text>
             <Markdown text={step.body[lang]} />
+
+            {needsAsk && noAskMode && (
+              <Box padding={1} borderStyle="round" borderColor="warning">
+                <Text size="footnote" color="warning">
+                  {L.noAsk(noAskMode)}
+                </Text>
+              </Box>
+            )}
 
             {promptText && (
               <Box flexDirection="column" gap={0} padding={1} borderStyle="round" borderDimColor>

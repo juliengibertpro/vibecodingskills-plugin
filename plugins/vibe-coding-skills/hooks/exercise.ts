@@ -251,6 +251,8 @@ export const UI = {
     toastStep: (i: number, n: number) => `Step ${i}/${n} validated`,
     toastDone: 'Exercise complete!',
     command: 'Open the Vibe Coding Skills lesson beside the chat',
+    noAsk: (mode: string) =>
+      `Your session is in ${mode} mode: Claude edits without asking, so there is nothing to refuse. In the mode menu under the message box, pick the mode where Claude asks before each edit, then send the request again.`,
     bigModel: (model: string) =>
       `You are on ${model}. For these exercises Sonnet is plenty and uses far less of your quota: switch it in the model menu under the message box.`,
   },
@@ -273,6 +275,8 @@ export const UI = {
     toastStep: (i: number, n: number) => `Étape ${i}/${n} validée`,
     toastDone: 'Exo terminé !',
     command: 'Ouvrir la leçon Vibe Coding Skills à côté du chat',
+    noAsk: (mode: string) =>
+      `Ta session est en mode ${mode} : Claude modifie sans rien demander, donc il n'y a rien à refuser. Dans le menu des modes sous la zone de message, choisis celui où Claude demande avant chaque modification, puis renvoie la demande.`,
     bigModel: (model: string) =>
       `Tu es sur ${model}. Pour ces exos, Sonnet suffit et use beaucoup moins ton quota : change-le dans le menu du modèle, sous la zone de message.`,
   },

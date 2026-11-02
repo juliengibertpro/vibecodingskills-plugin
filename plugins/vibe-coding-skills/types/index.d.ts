@@ -27,6 +27,8 @@ declare module 'claude-code' {
     'vibe-coding-skills': {
       progress: Shaped<Progress | null>
       results: Shaped<Results | null>
+      /** Permission mode of the session, as the last prompt or turn end reported it. */
+      mode: string | null
     }
   }
 }
