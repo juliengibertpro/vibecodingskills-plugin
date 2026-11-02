@@ -33,6 +33,8 @@ const resultsAtom = atom({ plugin: 'vibe-coding-skills', key: 'results' } as con
   shape: 'results-1',
 })
 const modeAtom = atom({ plugin: 'vibe-coding-skills', key: 'mode' } as const, null)
+// The restart button asks first: a single click must not wipe the learner's progress.
+const confirmRestartAtom = atom({ plugin: 'vibe-coding-skills', key: 'confirmRestart' } as const, false)
 
 type Engine = EngineInterface
 
@@ -84,6 +86,13 @@ async function save($: Engine, next: Progress): Promise<void> {
 
 async function openPane($: Engine, lang: Lang): Promise<void> {
   await $.ui.open({ id: PANE, title: EXERCISE.course[lang] })
+}
+
+/** True when the current step waits for the learner to refuse an edit. */
+async function isRefusalStep($: Engine): Promise<boolean> {
+  const p = await read($, progressAtom)
+  const step = p && p.completedAt === null ? EXERCISE.steps[p.stepIndex] : undefined
+  return step?.checks.some(check => check.type === 'edit_refused') === true
 }
 
 /** Records a gesture under the current step. Returns false when no exercise runs. */
@@ -225,6 +234,8 @@ export const register: Register = on => {
       }
       if (EDIT_TOOLS.has(e.tool) && isRefused(ran) && (await addGesture($, GESTURE.editRefused))) {
         await evaluate($)
+      } else if (EDIT_TOOLS.has(e.tool) && !isRefused(ran) && (await isRefusalStep($))) {
+        await addGesture($, GESTURE.editAccepted)
       }
     } catch {
       // Recording is best effort: the tool's result always goes through untouched.
@@ -260,6 +271,7 @@ export const register: Register = on => {
     const results = await read($, resultsAtom)
     const model = await $.session.model().catch(() => '')
     const mode = await read($, modeAtom)
+    const isConfirmingRestart = await read($, confirmRestartAtom)
 
     if (!p) {
       return <Text dimColor>Type /atelier in an empty project folder to start.</Text>
@@ -276,15 +288,19 @@ export const register: Register = on => {
     const manualLabel = step?.manual?.[lang]
     const noAskMode = mode ? NO_ASK_MODES[mode] : undefined
     const needsAsk = step?.checks.some(check => check.type === 'edit_refused') === true
+    const seen = step ? (p.gestures[step.id] ?? []) : []
+    const isEditPassed = needsAsk && seen.includes(GESTURE.editAccepted)
     const shown = step && results?.stepId === step.id ? results.passed : null
     const dots = EXERCISE.steps
       .map((_, i) => (i < p.stepIndex ? '●' : i === p.stepIndex ? '◉' : '○'))
       .join(' ')
 
     const restart = async () => {
+      await update($, confirmRestartAtom, () => false)
       await save($, fresh(p.root, lang, await $.clock.now()))
       await update($, resultsAtom, () => null)
     }
+    const askRestart = (isAsking: boolean) => update($, confirmRestartAtom, () => isAsking)
     const switchLang = async () => {
       const latest = await read($, progressAtom)
       if (latest) await save($, { ...latest, lang: latest.lang === 'fr' ? 'en' : 'fr' })
@@ -348,6 +364,15 @@ export const register: Register = on => {
             </Text>
             <Markdown text={step.body[lang]} />
 
+            {isEditPassed && (
+              <Box flexDirection="column" gap={0} padding={1} borderStyle="round" borderColor="warning">
+                <Text size="footnote" weight="semibold" color="warning">
+                  {L.editPassedTitle}
+                </Text>
+                <Markdown text={L.editPassed} />
+              </Box>
+            )}
+
             {needsAsk && noAskMode && (
               <Box padding={1} borderStyle="round" borderColor="warning">
                 <Text size="footnote" color="warning">
@@ -406,10 +431,22 @@ export const register: Register = on => {
           </Box>
         )}
 
-        <Box flexDirection="row" gap={1} flexWrap="wrap">
-          <Button key="restart" label={L.restart} onPress={() => void restart()} />
-          <Button key="lang" label={L.otherLang} onPress={() => void switchLang()} />
-        </Box>
+        {isConfirmingRestart ? (
+          <Box flexDirection="column" gap={1} padding={1} borderStyle="round" borderColor="warning">
+            <Text size="footnote" color="warning">
+              {L.restartAsk}
+            </Text>
+            <Box flexDirection="row" gap={1} flexWrap="wrap">
+              <Button key="restart-yes" label={L.restartYes} onPress={() => void restart()} />
+              <Button key="restart-no" label={L.restartNo} onPress={() => void askRestart(false)} />
+            </Box>
+          </Box>
+        ) : (
+          <Box flexDirection="row" gap={1} flexWrap="wrap">
+            <Button key="restart" label={L.restart} onPress={() => void askRestart(true)} />
+            <Button key="lang" label={L.otherLang} onPress={() => void switchLang()} />
+          </Box>
+        )}
       </Box>
     )
   })

@@ -238,6 +238,10 @@ export const UI = {
     hint: 'Show a hint',
     hintTitle: 'Hint',
     restart: 'Restart the exercise',
+    restartAsk:
+      'Start over from step 1? Your progress on this exercise is lost. Your files stay as they are.',
+    restartYes: 'Yes, start over',
+    restartNo: 'Cancel',
     otherLang: 'Français',
     validated: 'Step validated:',
     stepOf: (i: number, n: number) => `Step ${i} of ${n}`,
@@ -251,6 +255,9 @@ export const UI = {
     toastStep: (i: number, n: number) => `Step ${i}/${n} validated`,
     toastDone: 'Exercise complete!',
     command: 'Open the Vibe Coding Skills lesson beside the chat',
+    editPassedTitle: 'Claude already made the change',
+    editPassed:
+      'The edit went through without being refused, so there is nothing left to refuse. To try again:\n\n1. Write to Claude: **Undo your last change to index.html** (accept it if Claude asks).\n2. In the mode menu under the message box, pick the mode where Claude asks before each edit.\n3. Put the terrible idea back in the chat, send it, and refuse.',
     noAsk: (mode: string) =>
       `Your session is in ${mode} mode: Claude edits without asking, so there is nothing to refuse. In the mode menu under the message box, pick the mode where Claude asks before each edit, then send the request again.`,
     bigModel: (model: string) =>
@@ -262,6 +269,10 @@ export const UI = {
     hint: 'Voir un indice',
     hintTitle: 'Indice',
     restart: "Recommencer l'exo",
+    restartAsk:
+      "Tout reprendre à l'étape 1 ? Ta progression sur cet exo sera perdue. Tes fichiers, eux, restent tels quels.",
+    restartYes: 'Oui, recommencer',
+    restartNo: 'Annuler',
     otherLang: 'English',
     validated: 'Étape validée :',
     stepOf: (i: number, n: number) => `Étape ${i} sur ${n}`,
@@ -275,6 +286,9 @@ export const UI = {
     toastStep: (i: number, n: number) => `Étape ${i}/${n} validée`,
     toastDone: 'Exo terminé !',
     command: 'Ouvrir la leçon Vibe Coding Skills à côté du chat',
+    editPassedTitle: 'Claude a déjà fait la modification',
+    editPassed:
+      "La modification est passée sans être refusée, il n'y a donc plus rien à refuser. Pour réessayer :\n\n1. Écris à Claude : **Annule ta dernière modification de index.html** (accepte si Claude te le demande).\n2. Dans le menu des modes sous la zone de message, choisis le mode où Claude demande avant chaque modification.\n3. Remets l'idée affreuse dans le chat, envoie-la, et refuse.",
     noAsk: (mode: string) =>
       `Ta session est en mode ${mode} : Claude modifie sans rien demander, donc il n'y a rien à refuser. Dans le menu des modes sous la zone de message, choisis celui où Claude demande avant chaque modification, puis renvoie la demande.`,
     bigModel: (model: string) =>

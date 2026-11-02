@@ -1,6 +1,6 @@
 {
   "name": "vibe-coding-skills",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Vibe Coding Skills: the lesson in a panel beside the chat, each step checked when Claude finishes answering.",
   "author": {
     "name": "Vibe Coding Skills"

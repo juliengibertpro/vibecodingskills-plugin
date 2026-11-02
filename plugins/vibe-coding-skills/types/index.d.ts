@@ -29,6 +29,8 @@ declare module 'claude-code' {
       results: Shaped<Results | null>
       /** Permission mode of the session, as the last prompt or turn end reported it. */
       mode: string | null
+      /** The panel is asking the learner to confirm a restart. */
+      confirmRestart: boolean
     }
   }
 }

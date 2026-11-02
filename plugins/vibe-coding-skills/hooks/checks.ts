@@ -16,6 +16,8 @@ export type Fs = {
 export const GESTURE = {
   ownPrompt: 'prompt:own',
   editRefused: 'edit:refused',
+  // Not a check: lets the panel spot a refusal step that Claude already got past.
+  editAccepted: 'edit:accepted',
   manual: 'manual',
   tool: (name: string) => `tool:${name}`,
 } as const
